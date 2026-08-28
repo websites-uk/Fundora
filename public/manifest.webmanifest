@@ -1,0 +1,14 @@
+{
+  "name": "Fundora",
+  "short_name": "Fundora",
+  "description": "Fundora investor dashboard",
+  "start_url": "/Fundora/",
+  "scope": "/Fundora/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#0757ff",
+  "background_color": "#f4f8ff",
+  "icons": [
+    {"src":"/Fundora/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
