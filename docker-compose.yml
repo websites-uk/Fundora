@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fundora
+      POSTGRES_USER: fundora
+      POSTGRES_PASSWORD: change-this-local-password
+    ports:
+      - "5432:5432"
+    volumes:
+      - fundora_pgdata:/var/lib/postgresql/data
+
+volumes:
+  fundora_pgdata:
