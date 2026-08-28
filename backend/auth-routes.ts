@@ -1,30 +1,45 @@
-import { createSession, destroySession, getSession, hashPassword, verifyPassword, type AuthUser, type Role } from './session-auth';
+import { db } from './db';
+import { createSession, destroySession, getSession, hashPassword, verifyPassword, type Role } from './session-auth';
 
-// Replace this development credential store with a database-backed users table.
-// Do not commit real credentials or passwords to GitHub.
-const users: Array<AuthUser & { salt: string; passwordDigest: string }> = [];
-
-export function registerCredentialUser(email: string, password: string, role: Role = 'investor') {
-  const normalized = email.trim().toLowerCase();
-  if (!normalized || password.length < 12) throw new Error('Email and a 12+ character password are required.');
-  if (users.some(u => u.email === normalized)) throw new Error('Account already exists.');
-  const { salt, digest } = hashPassword(password);
-  const user: AuthUser = { id: crypto.randomUUID(), email: normalized, role };
-  users.push({ ...user, salt, passwordDigest: digest });
-  return user;
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
 }
 
-export function login(email: string, password: string, role: Role) {
-  const normalized = email.trim().toLowerCase();
-  const user = users.find(u => u.email === normalized && u.role === role);
-  if (!user || !verifyPassword(password, user.salt, user.passwordDigest)) throw new Error('Invalid credentials.');
+export async function registerInvestor(email: string, password: string) {
+  const normalized = normalizeEmail(email);
+  if (!/^\S+@\S+\.\S+$/.test(normalized)) throw new Error('Enter a valid email address.');
+  if (password.length < 12) throw new Error('Password must be at least 12 characters.');
+  const existing = await db.query('select 1 from users where email=$1', [normalized]);
+  if (existing.rowCount) throw new Error('Account already exists.');
+  const result = await db.query('insert into users (email,password_hash,role) values ($1,$2,$3) returning id,email,role', [normalized, hashPassword(password), 'investor']);
+  return result.rows[0];
+}
+
+export async function login(email: string, password: string, role: Role) {
+  const normalized = normalizeEmail(email);
+  const result = await db.query('select id,email,role,password_hash from users where email=$1 and role=$2', [normalized, role]);
+  const user = result.rows[0];
+  if (!user || !verifyPassword(password, user.password_hash)) throw new Error('Invalid credentials.');
   return createSession({ id: user.id, email: user.email, role: user.role });
 }
 
-export function logout(sessionId: string | undefined) {
-  destroySession(sessionId);
+export async function logout(sessionId?: string) {
+  await destroySession(sessionId);
 }
 
-export function currentUser(sessionId: string | undefined) {
-  return getSession(sessionId)?.user ?? null;
+export async function currentUser(sessionId?: string) {
+  return (await getSession(sessionId))?.user ?? null;
+}
+
+export async function bootstrapAdmin() {
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD;
+  if (!email || !password) throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD are required to bootstrap the admin account.');
+  if (password.length < 16) throw new Error('ADMIN_PASSWORD must be at least 16 characters.');
+  const result = await db.query('select id from users where email=$1', [email]);
+  if (result.rowCount) {
+    await db.query('update users set role=$1 where email=$2', ['admin', email]);
+    return;
+  }
+  await db.query('insert into users (email,password_hash,role) values ($1,$2,$3)', [email, hashPassword(password), 'admin']);
 }
