@@ -1,4 +1,4 @@
-import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { randomUUID, scryptSync, randomBytes, timingSafeEqual } from 'node:crypto';
 import { db } from './db';
 
 export type Role = 'investor' | 'admin';
@@ -28,7 +28,7 @@ export function verifyPassword(password: string, stored: string): boolean {
 }
 
 export async function createSession(user: AuthUser): Promise<Session> {
-  const id = randomBytes(32).toString('hex');
+  const id = randomUUID();
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
   await db.query('insert into sessions (id, user_id, expires_at) values ($1, $2, $3)', [id, user.id, expiresAt]);
   return { id, user, expiresAt };
