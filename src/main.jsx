@@ -1,64 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
-
-const plans = [
-  ['Starter', 10000, '3 weeks'],
-  ['Bronze', 25000, '3 weeks'],
-  ['Silver', 40000, '3 weeks'],
-  ['Premium', 55000, '3 weeks'],
-];
-
-function UserDashboard() {
-  const [page, setPage] = useState('home');
-  const [selected, setSelected] = useState(null);
-  const [ref, setRef] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-
-  const selectPlan = (plan) => {
-    setSelected(plan);
-    setSubmitted(false);
-    setPage('deposit');
-  };
-
-  return (
-    <div className="app">
-      <header>
-        <div className="logo">F</div>
-        <div><b>Fundora</b><small>Investor portal</small></div>
-        <div className="secure-pill">Secure</div>
-      </header>
-      <main>
-        {page === 'home' && <>
-          <section className="hero">
-            <span>INVESTOR DASHBOARD</span>
-            <h1>Welcome back.</h1>
-            <p>View your account, explore available plans and submit funding requests from one mobile workspace.</p>
-            <div className="balance"><small>Account balance</small><strong>₦500,000</strong><em>Sample account figure</em></div>
-          </section>
-          <section className="quick"><div><small>Invested</small><b>₦55,000</b></div><div><small>Available</small><b>₦445,000</b></div></section>
-          <section>
-            <div className="title"><small>INVESTMENT PLANS</small><h2>Choose a plan</h2></div>
-            <div className="plans">{plans.map((p) => <article key={p[1]}><span>{p[0]}</span><h3>₦{p[1].toLocaleString()}</h3><p>{p[2]} · Review all terms and risks before investing.</p><button onClick={() => selectPlan(p)}>View plan</button></article>)}</div>
-          </section>
-        </>}
-        {page === 'deposit' && <section className="page">
-          <button className="back" onClick={() => setPage('home')}>← Dashboard</button><small>DEPOSIT</small><h2>Fund your investment</h2>
-          <p>Selected plan: <b>{selected?.[0]}</b> — ₦{selected?.[1].toLocaleString()}</p>
-          <div className="bank"><b>Bank transfer details</b><span>Bank details will appear here</span><span>Account name will appear here</span><span>Account number will appear here</span></div>
-          <label className="field-label">Transfer reference</label><input placeholder="Enter your transfer reference" value={ref} onChange={e => setRef(e.target.value)} />
-          <button className="primary" onClick={() => setSubmitted(true)}>Submit deposit</button>
-          {submitted && <div className="success">Deposit request received for review.</div>}
-        </section>}
-        {page === 'activity' && <section className="page"><small>ACTIVITY</small><h2>Transactions</h2><div className="activity-card"><span>Portfolio funding</span><b>₦55,000</b><small>Pending verification</small></div><div className="activity-card"><span>Account created</span><b>Completed</b><small>Investor account</small></div></section>}
-      </main>
-      <nav><button className={page === 'home' ? 'active' : ''} onClick={() => setPage('home')}>Home</button><button onClick={() => setPage('home')}>Invest</button><button className={page === 'deposit' ? 'active' : ''} onClick={() => setPage('deposit')}>Deposit</button><button className={page === 'activity' ? 'active' : ''} onClick={() => setPage('activity')}>Activity</button></nav>
-    </div>
-  );
-}
-
-function App() {
-  return <UserDashboard />;
-}
-
-createRoot(document.getElementById('root')).render(<App />);
+const plans=[['Starter',10000,'3 weeks'],['Bronze',25000,'3 weeks'],['Silver',40000,'3 weeks'],['Premium',55000,'3 weeks']];
+const bank={bankName:'Flutterwave MFB (Formerly OK MFB)',accountName:'Raztune Fundora FLW',accountNumber:'9432152481',currency:'NGN'};
+function CopyButton({value}){const[copied,setCopied]=useState(false);const copy=async()=>{try{await navigator.clipboard.writeText(value);setCopied(true);setTimeout(()=>setCopied(false),1200)}catch{}};return <button className="copy" onClick={copy}>{copied?'Copied':'Copy'}</button>}
+function ThemeToggle(){const[dark,setDark]=useState(()=>localStorage.getItem('fundora-theme')==='dark');useEffect(()=>{document.documentElement.classList.toggle('dark',dark);localStorage.setItem('fundora-theme',dark?'dark':'light')},[dark]);return <button className="theme" onClick={()=>setDark(!dark)}>{dark?'Light':'Dark'}</button>}
+function UserDashboard(){const[page,setPage]=useState('home'),[selected,setSelected]=useState(null),[ref,setRef]=useState(''),[submitted,setSubmitted]=useState(false),[loggedIn,setLoggedIn]=useState(true);const selectPlan=p=>{setSelected(p);setSubmitted(false);setPage('deposit')};if(!loggedIn)return <div className="auth"><div className="auth-card"><div className="logo big">F</div><small>FUNDORA</small><h1>Welcome back</h1><p>Sign in to your investor account.</p><input placeholder="Email address" type="email"/><input placeholder="Password" type="password"/><button className="primary" onClick={()=>setLoggedIn(true)}>Sign in</button><button className="ghost">Create account</button></div></div>;return <div className="app"><header><div className="logo">F</div><div><b>Fundora</b><small>Investor portal</small></div><ThemeToggle/><button className="logout" onClick={()=>setLoggedIn(false)}>Log out</button></header><main>{page==='home'&&<><section className="hero"><div className="hero-copy"><span>FUNDORA INVESTOR DASHBOARD</span><h1>Build your financial future with confidence.</h1><p>Explore plans, track your portfolio and manage your investment journey from one secure workspace.</p></div><div className="hero-mark">F</div><div className="balance"><small>Account balance</small><strong>₦500,000</strong><em>Sample account figure</em></div></section><section className="quick"><div><small>Total invested</small><b>₦55,000</b></div><div><small>Available</small><b>₦445,000</b></div><div><small>Plan period</small><b>21 days</b></div></section><section><div className="title"><small>INVESTMENT PLANS</small><h2>Choose your plan</h2><p>Select an option to view its deposit instructions.</p></div><div className="plans">{plans.map(p=><article key={p[1]}><span>{p[0]}</span><h3>₦{p[1].toLocaleString()}</h3><p>{p[2]} · Review applicable terms and risks before investing.</p><button onClick={()=>selectPlan(p)}>Select plan</button></article>)}</div></section><section className="trust"><b>Everything in one place</b><p>Account overview, investment selection, bank-transfer instructions and activity tracking in a simple mobile-first experience.</p></section></>}{page==='deposit'&&<section className="page"><button className="back" onClick={()=>setPage('home')}>← Dashboard</button><small>DEPOSIT</small><h2>Fund your investment</h2><p>Selected plan: <b>{selected?.[0]}</b> — ₦{selected?.[1].toLocaleString()}</p><div className="bank"><b>Bank transfer details</b><Row label="Account number" value={bank.accountNumber}/><Row label="Currency" value={bank.currency}/><Row label="Bank name" value={bank.bankName}/><Row label="Account name" value={bank.accountName}/></div><label className="field-label">Transfer reference<input placeholder="Enter your transfer reference" value={ref} onChange={e=>setRef(e.target.value)}/></label><button className="primary" onClick={()=>setSubmitted(true)}>Submit deposit</button>{submitted&&<div className="success">Deposit request received for review.</div>}</section>}{page==='activity'&&<section className="page"><small>ACTIVITY</small><h2>Transactions</h2><div className="activity-card"><span>Portfolio funding</span><b>₦55,000</b><small>Pending verification</small></div><div className="activity-card"><span>Account created</span><b>Completed</b><small>Investor account</small></div></section>}</main><nav><button className={page==='home'?'active':''} onClick={()=>setPage('home')}>Home</button><button onClick={()=>setPage('home')}>Invest</button><button className={page==='deposit'?'active':''} onClick={()=>setPage('deposit')}>Deposit</button><button className={page==='activity'?'active':''} onClick={()=>setPage('activity')}>Activity</button></nav></div>}
+function Row({label,value}){return <div className="bank-row"><div><span>{label}</span><strong>{value}</strong></div><CopyButton value={value}/></div>}
+createRoot(document.getElementById('root')).render(<UserDashboard/>);
