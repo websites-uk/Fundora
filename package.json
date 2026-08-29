@@ -1,25 +1,18 @@
 {
   "name": "fundora",
   "private": true,
-  "version": "2.1.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "server": "tsx backend/server.ts",
-    "db:check": "tsx backend/db-check.ts"
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "vite": "latest",
-    "typescript": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "lucide-react": "latest",
-    "pg": "latest"
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.10",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
-  "devDependencies": {
-    "tsx": "latest"
-  }
+  "devDependencies": {}
 }
